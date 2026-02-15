@@ -8,10 +8,10 @@ export default function Home() {
         Sign in and manage open invoices for your customers.
       </p>
       <Link
-        href="/dashboard"
+        href="/login"
         className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 active:scale-[0.98] transition"
       >
-        Go to Dashboard
+        Sales Team Sign In
       </Link>
     </div>
   );

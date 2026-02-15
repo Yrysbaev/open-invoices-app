@@ -3,20 +3,11 @@ import { NextResponse } from "next/server";
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
-  // Intuit usually sends `realmId`, but tolerate casing variations.
-  const realmId =
-    searchParams.get("realmId") ??
-    searchParams.get("realmid") ??
-    searchParams.get("realmID");
+  const realmId = searchParams.get("realmId");
 
   if (!code || !realmId) {
-    const receivedParams = Array.from(searchParams.keys());
     return NextResponse.json(
-      {
-        error:
-          "Missing company context from QuickBooks (realmId). Reconnect and select a company.",
-        details: { hasCode: Boolean(code), receivedParams },
-      },
+      { error: "Missing code or realmId from QuickBooks" },
       { status: 400 }
     );
   }

@@ -22,13 +22,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetch("/api/qbo/customers")
-      .then(async (r) => {
-        if (r.status === 401) {
-          window.location.href = "/login";
-          return {};
-        }
-        return r.json();
-      })
+      .then((r) => r.json())
       .then((data) => {
         if (data.error) {
           setCustomersError(data.error);
@@ -57,7 +51,12 @@ export default function Dashboard() {
     try {
       const r = await fetch(`/api/qbo/open-invoices?customerId=${customer.Id}`);
       const data = await r.json();
-      setInvoices(data?.QueryResponse?.Invoice ?? []);
+      if (data?.error) {
+        setCustomersError(data.error);
+        setInvoices([]);
+      } else {
+        setInvoices(data?.QueryResponse?.Invoice ?? []);
+      }
     } catch {
       setInvoices([]);
     }
