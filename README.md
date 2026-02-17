@@ -20,6 +20,10 @@ Mobile-friendly web app for your sales team to view and download open invoices f
    cp .env.local.example .env.local
    ```
    Edit `.env.local` with your QuickBooks credentials.
+   For production on Vercel, also set:
+   ```env
+   DATABASE_URL=your_postgres_connection_string
+   ```
 
 4. **Seed sales users**
    ```bash
@@ -35,7 +39,7 @@ Mobile-friendly web app for your sales team to view and download open invoices f
 ## Flow
 
 1. Open `/login` and sign in with your sales email + password
-2. Go to Dashboard → **Connect QBO** (sign in with QuickBooks)
+2. Admin connects QuickBooks once via `/api/qbo/connect`
 3. Search/select a customer
 4. View open invoices
 5. **Download PDF** (single) or **Download all as ZIP**

@@ -98,12 +98,6 @@ export default function Dashboard() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-semibold text-slate-800">Open Invoices</h1>
         <div className="flex items-center gap-3">
-          <a
-            className="text-sm text-indigo-600 font-medium hover:underline"
-            href="/api/qbo/connect"
-          >
-            Connect QBO
-          </a>
           <button
             className="text-sm text-slate-600 font-medium hover:underline"
             onClick={signOut}
@@ -118,6 +112,11 @@ export default function Dashboard() {
           {customersError}
         </div>
       )}
+
+      <div className="mb-4 p-3 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600">
+        QuickBooks connection is managed by admin. Sales users do not need
+        QuickBooks credentials.
+      </div>
 
       <div className="mb-4">
         <input

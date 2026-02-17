@@ -1,6 +1,15 @@
 import { NextResponse } from "next/server";
+import { requireAdminUser } from "@/lib/auth-server";
 
 export async function GET() {
+  const isAdmin = await requireAdminUser();
+  if (!isAdmin) {
+    return NextResponse.json(
+      { error: "Only admin can connect QuickBooks." },
+      { status: 403 }
+    );
+  }
+
   const clientId = process.env.QBO_CLIENT_ID;
   const redirectUri = process.env.QBO_REDIRECT_URI;
 

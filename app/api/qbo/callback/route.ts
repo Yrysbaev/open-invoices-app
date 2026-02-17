@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { saveQboConnection } from "@/lib/qbo";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -39,32 +40,12 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: data }, { status: 500 });
   }
 
-  // TODO: save tokens + realmId to your DB (encrypted), tied to your company/account
-  // For MVP: store in httpOnly cookies (replace with DB for production)
-  const baseUrl = new URL(req.url).origin;
-  const response = NextResponse.redirect(new URL("/dashboard", baseUrl));
-
-  response.cookies.set("qbo_realm_id", realmId, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 365, // 1 year
-    path: "/",
-  });
-  response.cookies.set("qbo_access_token", data.access_token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60, // 1 hour (QBO tokens expire in ~1h)
-    path: "/",
-  });
-  response.cookies.set("qbo_refresh_token", data.refresh_token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 100, // ~100 days
-    path: "/",
+  await saveQboConnection({
+    realmId,
+    accessToken: String(data.access_token),
+    refreshToken: String(data.refresh_token),
+    expiresIn: Number(data.expires_in ?? 3600),
   });
 
-  return response;
+  return NextResponse.redirect(new URL("/dashboard", req.url));
 }

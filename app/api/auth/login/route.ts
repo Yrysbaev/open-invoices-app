@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const user = verifyUser(email, password);
+  const user = await verifyUser(email, password);
   if (!user) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
 
   const response = NextResponse.json({ ok: true });

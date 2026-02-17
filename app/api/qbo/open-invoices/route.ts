@@ -15,7 +15,7 @@ export async function GET(req: Request) {
   const creds = await getQboCredentials();
   if (!creds) {
     return NextResponse.json(
-      { error: "Not connected to QuickBooks. Connect first." },
+      { error: "QuickBooks is not connected. Ask admin to reconnect." },
       { status: 401 }
     );
   }

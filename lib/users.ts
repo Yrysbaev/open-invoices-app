@@ -1,37 +1,31 @@
 import bcrypt from "bcryptjs";
-import db from "@/lib/db";
+import { findUserByEmail, upsertUserRecord } from "@/lib/db";
 
-type UserRow = {
-  id: number;
-  email: string;
-  password_hash: string;
-};
-
-export function verifyUser(email: string, password: string) {
+export async function verifyUser(email: string, password: string) {
   const normalizedEmail = email.trim().toLowerCase();
   if (!normalizedEmail || !password) return null;
 
-  const stmt = db.prepare(
-    "SELECT id, email, password_hash FROM users WHERE email = ? LIMIT 1"
-  );
-  const user = stmt.get(normalizedEmail) as UserRow | undefined;
+  const user = await findUserByEmail(normalizedEmail);
   if (!user) return null;
 
   const ok = bcrypt.compareSync(password, user.password_hash);
   if (!ok) return null;
 
-  return { id: user.id, email: user.email };
+  return { id: user.id, email: user.email, role: user.role };
 }
 
-export function upsertUser(email: string, plainPassword: string) {
+export async function upsertUser(
+  email: string,
+  plainPassword: string,
+  role: "admin" | "sales" = "sales"
+) {
   const normalizedEmail = email.trim().toLowerCase();
   const hash = bcrypt.hashSync(plainPassword, 10);
+  await upsertUserRecord(normalizedEmail, hash, role);
+}
 
-  const stmt = db.prepare(`
-    INSERT INTO users (email, password_hash)
-    VALUES (?, ?)
-    ON CONFLICT(email) DO UPDATE SET
-      password_hash=excluded.password_hash
-  `);
-  stmt.run(normalizedEmail, hash);
+export async function getUserByEmail(email: string) {
+  const user = await findUserByEmail(email);
+  if (!user) return undefined;
+  return { id: user.id, email: user.email, role: user.role };
 }
