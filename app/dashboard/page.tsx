@@ -94,10 +94,23 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen p-4 max-w-xl mx-auto bg-slate-50 pb-safe">
+    <div className="min-h-screen p-4 max-w-xl mx-auto bg-[#f4f8fd] pb-safe">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-semibold text-slate-800">Open Invoices</h1>
+        <div className="flex items-center gap-2">
+          <div className="w-9 h-9 rounded-full bg-[#004f96] flex items-center justify-center">
+            <div className="w-6 h-6 rounded-full bg-[#d60052] flex items-center justify-center text-white text-sm font-black">
+              M
+            </div>
+          </div>
+          <h1 className="text-xl font-semibold text-[#004f96]">Open Invoices</h1>
+        </div>
         <div className="flex items-center gap-3">
+          <a
+            className="text-sm text-[#004f96] font-medium hover:underline"
+            href="/api/qbo/connect"
+          >
+            Connect QBO
+          </a>
           <button
             className="text-sm text-slate-600 font-medium hover:underline"
             onClick={signOut}
@@ -113,14 +126,9 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="mb-4 p-3 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600">
-        QuickBooks connection is managed by admin. Sales users do not need
-        QuickBooks credentials.
-      </div>
-
       <div className="mb-4">
         <input
-          className="w-full border border-slate-200 rounded-xl p-3 text-base bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+          className="w-full border border-slate-200 rounded-xl p-3 text-base bg-white focus:ring-2 focus:ring-[#004f96] focus:border-[#004f96] outline-none"
           placeholder="Search customer..."
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -156,7 +164,7 @@ export default function Dashboard() {
               <button
                 onClick={downloadAllZip}
                 disabled={downloadingZip}
-                className="w-full py-3 px-4 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed transition"
+                className="w-full py-3 px-4 bg-[#004f96] text-white rounded-xl font-medium hover:opacity-95 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed transition"
               >
                 {downloadingZip ? "Preparing ZIP..." : "Download all as ZIP"}
               </button>
@@ -184,7 +192,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <a
-                    className="shrink-0 px-4 py-2 border border-indigo-600 text-indigo-600 rounded-xl text-sm font-medium hover:bg-indigo-50 active:scale-[0.98] transition"
+                    className="shrink-0 px-4 py-2 border border-[#004f96] text-[#004f96] rounded-xl text-sm font-medium hover:bg-blue-50 active:scale-[0.98] transition"
                     href={`/api/qbo/invoice-pdf?invoiceId=${inv.Id}`}
                   >
                     Download PDF

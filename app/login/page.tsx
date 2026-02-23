@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,9 +39,18 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+    <main className="min-h-screen bg-[#f4f8fd] flex items-center justify-center p-4">
       <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h1 className="text-xl font-semibold text-slate-800">Sales Team Login</h1>
+        <div className="flex items-center gap-3 mb-2">
+          <Image
+            src="/makrofood.png"
+            alt="Makro Food logo"
+            width={44}
+            height={44}
+            className="rounded-full object-cover"
+          />
+          <h1 className="text-xl font-semibold text-[#004f96]">Sales Team Login</h1>
+        </div>
         <p className="mt-1 text-sm text-slate-600">
           Enter your sales username and password.
         </p>
@@ -51,7 +61,7 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
-            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:ring-2 focus:ring-[#004f96]"
             required
           />
           <input
@@ -59,7 +69,7 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
-            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full rounded-xl border border-slate-300 px-3 py-2.5 outline-none focus:ring-2 focus:ring-[#004f96]"
             required
           />
 
@@ -72,7 +82,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="w-full rounded-xl bg-[#004f96] px-4 py-2.5 font-medium text-white hover:opacity-95 disabled:opacity-60"
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
