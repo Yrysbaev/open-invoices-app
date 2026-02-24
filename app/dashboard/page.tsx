@@ -7,6 +7,7 @@ type Invoice = {
   Id: string;
   DocNumber: string;
   TxnDate: string;
+  DueDate?: string;
   TotalAmt: number;
   Balance: number;
 };
@@ -47,6 +48,14 @@ export default function Dashboard() {
   const totalOpenBalance = useMemo(() => {
     return invoices.reduce((sum, inv) => sum + Number(inv.Balance || 0), 0);
   }, [invoices]);
+
+  function isInvoiceOverdue(invoice: Invoice) {
+    if (!invoice.DueDate) return false;
+    const due = new Date(invoice.DueDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return !Number.isNaN(due.getTime()) && due < today;
+  }
 
   async function loadInvoices(customer: Customer) {
     setSelected(customer);
@@ -193,14 +202,26 @@ export default function Dashboard() {
             {invoices.map((inv) => (
               <div
                 key={inv.Id}
-                className="p-4 border border-slate-200 rounded-xl bg-white shadow-sm"
+                className={`p-4 border rounded-xl shadow-sm ${
+                  isInvoiceOverdue(inv)
+                    ? "border-red-300 bg-red-50"
+                    : "border-slate-200 bg-white"
+                }`}
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <div className="font-medium text-slate-800">
-                      #{inv.DocNumber}
+                    <div className="font-medium text-slate-800 flex items-center gap-2">
+                      <span>#{inv.DocNumber}</span>
+                      {isInvoiceOverdue(inv) && (
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
+                          OVERDUE
+                        </span>
+                      )}
                     </div>
                     <div className="text-sm text-slate-500">{inv.TxnDate}</div>
+                    <div className="text-sm text-slate-500">
+                      Due: {inv.DueDate || "-"}
+                    </div>
                     <div className="text-sm font-medium text-slate-700">
                       Balance: ${Number(inv.Balance).toFixed(2)}
                     </div>

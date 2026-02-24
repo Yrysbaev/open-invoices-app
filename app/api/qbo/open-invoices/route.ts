@@ -46,7 +46,7 @@ export async function GET(req: Request) {
   }
 
   // QBO uses Balance > 0 for open/unpaid invoices
-  const query = `select Id, DocNumber, TxnDate, TotalAmt, Balance from Invoice where CustomerRef='${customerId}' and Balance > '0' order by TxnDate desc maxresults 1000`;
+  const query = `select Id, DocNumber, TxnDate, DueDate, TotalAmt, Balance from Invoice where CustomerRef='${customerId}' and Balance > '0' order by TxnDate desc maxresults 1000`;
 
   const url = `${qboBaseUrl()}/v3/company/${creds.realmId}/query?query=${encodeURIComponent(query)}`;
 
