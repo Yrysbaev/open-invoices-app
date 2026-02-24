@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth-server";
+import { filterCustomersForUser } from "@/lib/customer-access";
 import { getQboCredentials, qboBaseUrl } from "@/lib/qbo";
 
 export async function GET() {
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const creds = await getQboCredentials();
   if (!creds) {
     return NextResponse.json(
-      { error: "QuickBooks is not connected. Ask admin to reconnect." },
+      { error: "Not connected to QuickBooks. Connect first." },
       { status: 401 }
     );
   }
@@ -27,6 +34,15 @@ export async function GET() {
       { error: data?.Fault || data },
       { status: r.status }
     );
+  }
+
+  const customers = (data?.QueryResponse?.Customer ?? []) as Array<{
+    Id: string;
+    DisplayName?: string;
+  }>;
+  const filtered = filterCustomersForUser(customers, user);
+  if (data?.QueryResponse) {
+    data.QueryResponse.Customer = filtered;
   }
 
   return NextResponse.json(data);

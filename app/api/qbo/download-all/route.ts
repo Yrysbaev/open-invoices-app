@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { PassThrough, Readable } from "stream";
 import archiver from "archiver";
+import { getCurrentUser } from "@/lib/auth-server";
+import { canAccessCustomerByDisplayName } from "@/lib/customer-access";
 import { getQboCredentials, qboBaseUrl } from "@/lib/qbo";
 
 export async function GET(req: Request) {
@@ -14,12 +16,35 @@ export async function GET(req: Request) {
     );
   }
 
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const creds = await getQboCredentials();
   if (!creds) {
     return NextResponse.json(
-      { error: "QuickBooks is not connected. Ask admin to reconnect." },
+      { error: "Not connected to QuickBooks. Connect first." },
       { status: 401 }
     );
+  }
+
+  const customerName = await getCustomerDisplayName(
+    creds.accessToken,
+    creds.realmId,
+    customerId
+  );
+  if (!customerName) {
+    return NextResponse.json({ error: "Customer not found" }, { status: 404 });
+  }
+  if (
+    !canAccessCustomerByDisplayName({
+      email: user.email,
+      role: user.role,
+      displayName: customerName,
+    })
+  ) {
+    return NextResponse.json({ error: "Forbidden customer access" }, { status: 403 });
   }
 
   // Fetch open invoices
@@ -72,4 +97,22 @@ export async function GET(req: Request) {
       "Content-Disposition": `attachment; filename="open-invoices.zip"`,
     },
   });
+}
+
+async function getCustomerDisplayName(
+  accessToken: string,
+  realmId: string,
+  customerId: string
+) {
+  const query = `select Id, DisplayName from Customer where Id='${customerId}' maxresults 1`;
+  const url = `${qboBaseUrl()}/v3/company/${realmId}/query?query=${encodeURIComponent(query)}`;
+  const r = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: "application/json",
+    },
+  });
+  if (!r.ok) return null;
+  const data = await r.json();
+  return data?.QueryResponse?.Customer?.[0]?.DisplayName ?? null;
 }
