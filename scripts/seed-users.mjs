@@ -5,15 +5,16 @@ import path from "path";
 import postgres from "postgres";
 
 const users = [
-  { email: "ismail@sales.dallas", password: "ismail2026!", role: "sales" },
-  { email: "ali@sales.austin", password: "ali2026!", role: "sales" },
-  { email: "yusuf@sales.houston", password: "yusuf2026!", role: "sales" },
+  { email: "ismail@sales.dallas", password: "Ismail2026!", role: "sales" },
+  { email: "ali@sales.austin", password: "Ali2026!", role: "sales" },
+  { email: "yusuf@sales.houston", password: "Yusuf2026!", role: "sales" },
   {
-    email: "maksatbek@sales.assistant",
-    password: "maksatbek2026!",
+    email: "office@sales.assistant",
+    password: "Office#8394Makro",
     role: "admin",
   },
 ];
+const removedUsers = ["maksatbek@sales.assistant"];
 
 const databaseUrl = process.env.DATABASE_URL;
 
@@ -38,6 +39,10 @@ async function seedPostgres() {
         password_hash = EXCLUDED.password_hash,
         role = EXCLUDED.role
     `;
+  }
+
+  for (const oldUser of removedUsers) {
+    await sql`DELETE FROM users WHERE email = ${oldUser.toLowerCase()}`;
   }
 
   const rows = await sql`SELECT COUNT(*)::int AS count FROM users`;
@@ -83,6 +88,11 @@ function seedSqlite() {
       bcrypt.hashSync(user.password, 10),
       user.role
     );
+  }
+
+  const deleteStmt = db.prepare(`DELETE FROM users WHERE email = ?`);
+  for (const oldUser of removedUsers) {
+    deleteStmt.run(oldUser.toLowerCase());
   }
 
   const count = db.prepare("SELECT COUNT(*) as count FROM users").get();
