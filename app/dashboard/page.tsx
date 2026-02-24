@@ -44,6 +44,10 @@ export default function Dashboard() {
       .slice(0, 50);
   }, [customers, q]);
 
+  const totalOpenBalance = useMemo(() => {
+    return invoices.reduce((sum, inv) => sum + Number(inv.Balance || 0), 0);
+  }, [invoices]);
+
   async function loadInvoices(customer: Customer) {
     setSelected(customer);
     setLoading(true);
@@ -160,6 +164,16 @@ export default function Dashboard() {
 
         {!loading && selected && (
           <div className="space-y-3">
+            <div className="p-4 border border-slate-200 rounded-xl bg-white shadow-sm">
+              <div className="text-xs text-slate-500">Total open balance</div>
+              <div className="text-2xl font-semibold text-[#004f96]">
+                ${totalOpenBalance.toFixed(2)}
+              </div>
+              <div className="text-xs text-slate-500 mt-1">
+                {invoices.length} open invoice{invoices.length === 1 ? "" : "s"}
+              </div>
+            </div>
+
             {invoices.length > 0 && (
               <button
                 onClick={downloadAllZip}
