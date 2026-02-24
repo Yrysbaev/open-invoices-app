@@ -17,7 +17,7 @@ export async function GET() {
     );
   }
 
-  const query = `select Id, DisplayName from Customer maxresults 1000`;
+  const query = `select Id, DisplayName, FullyQualifiedName from Customer maxresults 1000`;
   const url = `${qboBaseUrl()}/v3/company/${creds.realmId}/query?query=${encodeURIComponent(query)}`;
 
   const r = await fetch(url, {
@@ -39,6 +39,7 @@ export async function GET() {
   const customers = (data?.QueryResponse?.Customer ?? []) as Array<{
     Id: string;
     DisplayName?: string;
+    FullyQualifiedName?: string;
   }>;
   const filtered = filterCustomersForUser(customers, user);
   if (data?.QueryResponse) {

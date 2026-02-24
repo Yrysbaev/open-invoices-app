@@ -104,7 +104,7 @@ async function getCustomerDisplayName(
   realmId: string,
   customerId: string
 ) {
-  const query = `select Id, DisplayName from Customer where Id='${customerId}' maxresults 1`;
+  const query = `select Id, DisplayName, FullyQualifiedName from Customer where Id='${customerId}' maxresults 1`;
   const url = `${qboBaseUrl()}/v3/company/${realmId}/query?query=${encodeURIComponent(query)}`;
   const r = await fetch(url, {
     headers: {
@@ -114,5 +114,9 @@ async function getCustomerDisplayName(
   });
   if (!r.ok) return null;
   const data = await r.json();
-  return data?.QueryResponse?.Customer?.[0]?.DisplayName ?? null;
+  return (
+    data?.QueryResponse?.Customer?.[0]?.FullyQualifiedName ??
+    data?.QueryResponse?.Customer?.[0]?.DisplayName ??
+    null
+  );
 }

@@ -85,7 +85,7 @@ async function getInvoiceCustomerDisplayName(
   const customerId = invoiceData?.Invoice?.CustomerRef?.value as string | undefined;
   if (!customerId) return null;
 
-  const query = `select Id, DisplayName from Customer where Id='${customerId}' maxresults 1`;
+  const query = `select Id, DisplayName, FullyQualifiedName from Customer where Id='${customerId}' maxresults 1`;
   const customerUrl = `${qboBaseUrl()}/v3/company/${realmId}/query?query=${encodeURIComponent(query)}`;
   const customerRes = await fetch(customerUrl, {
     headers: {
@@ -95,5 +95,9 @@ async function getInvoiceCustomerDisplayName(
   });
   if (!customerRes.ok) return null;
   const customerData = await customerRes.json();
-  return customerData?.QueryResponse?.Customer?.[0]?.DisplayName ?? null;
+  return (
+    customerData?.QueryResponse?.Customer?.[0]?.FullyQualifiedName ??
+    customerData?.QueryResponse?.Customer?.[0]?.DisplayName ??
+    null
+  );
 }
