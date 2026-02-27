@@ -61,6 +61,13 @@ export default function Dashboard() {
       .slice(0, 50);
   }, [customers, q, overdueTotals]);
 
+  const totalOverdueAll = useMemo(() => {
+    return filtered.reduce(
+      (sum, c) => sum + (overdueTotals[c.Id] ?? 0),
+      0
+    );
+  }, [filtered, overdueTotals]);
+
   const totalOpenBalance = useMemo(() => {
     return invoices.reduce((sum, inv) => sum + Number(inv.Balance || 0), 0);
   }, [invoices]);
@@ -164,8 +171,8 @@ export default function Dashboard() {
         />
       </div>
 
-      <p className="mb-2 text-sm text-slate-600">
-        Sorted by total overdue (highest debt first).
+      <p className="mb-2 text-sm font-medium text-slate-700">
+        Total overdue: ${totalOverdueAll.toFixed(2)}
       </p>
       <div className="mb-6 border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
         <div className="grid grid-cols-[1fr_auto] gap-3 px-3 py-2.5 border-b border-slate-200 bg-slate-100">
