@@ -14,6 +14,7 @@ type Invoice = {
 
 export default function Dashboard() {
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [overdueTotals, setOverdueTotals] = useState<Record<string, number>>({});
   const [q, setQ] = useState("");
   const [selected, setSelected] = useState<Customer | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -37,13 +38,28 @@ export default function Dashboard() {
       .catch(() => setCustomersError("Failed to load customers"));
   }, []);
 
+  useEffect(() => {
+    fetch("/api/qbo/overdue-totals")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && typeof data === "object" && !data.error) {
+          setOverdueTotals(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    if (!s) return customers.slice(0, 50);
-    return customers
-      .filter((c) => c.DisplayName?.toLowerCase().includes(s))
+    const list = !s
+      ? customers
+      : customers.filter((c) =>
+          c.DisplayName?.toLowerCase().includes(s)
+        );
+    return [...list]
+      .sort((a, b) => (overdueTotals[b.Id] ?? 0) - (overdueTotals[a.Id] ?? 0))
       .slice(0, 50);
-  }, [customers, q]);
+  }, [customers, q, overdueTotals]);
 
   const totalOpenBalance = useMemo(() => {
     return invoices.reduce((sum, inv) => sum + Number(inv.Balance || 0), 0);
@@ -148,14 +164,28 @@ export default function Dashboard() {
         />
       </div>
 
+      <p className="mb-2 text-sm text-slate-600">
+        Sorted by total overdue (highest debt first).
+      </p>
       <div className="mb-6 border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+        <div className="grid grid-cols-[1fr_auto] gap-3 px-3 py-2.5 border-b border-slate-200 bg-slate-100">
+          <span className="text-sm font-semibold text-slate-700">Customer</span>
+          <span className="text-sm font-semibold text-slate-700 text-right min-w-[120px]">
+            Total overdue
+          </span>
+        </div>
         {filtered.map((c) => (
           <button
             key={c.Id}
-            className="w-full text-left p-3 border-b border-slate-100 last:border-b-0 hover:bg-slate-50 active:bg-slate-100 transition"
+            className="w-full text-left grid grid-cols-[1fr_auto] gap-3 px-3 py-3 border-b border-slate-100 last:border-b-0 hover:bg-slate-50 active:bg-slate-100 transition items-center"
             onClick={() => loadInvoices(c)}
           >
-            {c.DisplayName}
+            <span className="min-w-0 truncate">{c.DisplayName}</span>
+            <span className="text-sm font-medium text-slate-700 tabular-nums text-right min-w-[120px]">
+              {overdueTotals[c.Id] != null && overdueTotals[c.Id] > 0
+                ? `$${overdueTotals[c.Id].toFixed(2)}`
+                : "—"}
+            </span>
           </button>
         ))}
       </div>
