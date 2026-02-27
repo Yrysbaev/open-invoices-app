@@ -22,6 +22,14 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [customersError, setCustomersError] = useState<string | null>(null);
   const [downloadingZip, setDownloadingZip] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => setIsAdmin(data?.user?.role === "admin"))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch("/api/qbo/customers")
@@ -146,6 +154,14 @@ export default function Dashboard() {
           <h1 className="text-xl font-semibold text-[#004f96]">Open Invoices</h1>
         </div>
         <div className="flex items-center gap-3">
+          {isAdmin && (
+            <a
+              className="text-sm text-[#004f96] font-medium hover:underline"
+              href="/dashboard/analytics"
+            >
+              Analytics
+            </a>
+          )}
           <a
             className="text-sm text-[#004f96] font-medium hover:underline"
             href="/api/qbo/connect"
@@ -177,7 +193,7 @@ export default function Dashboard() {
       </div>
 
       <p className="mb-2 text-sm font-medium text-slate-700">
-        Total overdue (your customers): ${totalOverdueAll.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        Total overdue: ${totalOverdueAll.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </p>
       <div className="mb-6 border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
         <div className="grid grid-cols-[1fr_auto] gap-3 px-3 py-2.5 border-b border-slate-200 bg-slate-100">
