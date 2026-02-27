@@ -51,14 +51,17 @@ export default function Dashboard() {
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    const list = !s
+    let list = !s
       ? customers
       : customers.filter((c) =>
           c.DisplayName?.toLowerCase().includes(s)
         );
+    if (!s) {
+      list = list.filter((c) => (overdueTotals[c.Id] ?? 0) > 0);
+    }
     return [...list]
       .sort((a, b) => (overdueTotals[b.Id] ?? 0) - (overdueTotals[a.Id] ?? 0))
-      .slice(0, 50);
+      .slice(0, 20);
   }, [customers, q, overdueTotals]);
 
   const totalOverdueAll = useMemo(() => {
