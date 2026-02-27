@@ -94,5 +94,6 @@ export async function GET() {
     totals[customerId] = (totals[customerId] ?? 0) + balance;
   }
 
-  return NextResponse.json(totals);
+  const total = Object.values(totals).reduce((s, v) => s + v, 0);
+  return NextResponse.json({ totals, total });
 }

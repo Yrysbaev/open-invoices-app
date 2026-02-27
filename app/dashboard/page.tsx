@@ -15,6 +15,7 @@ type Invoice = {
 export default function Dashboard() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [overdueTotals, setOverdueTotals] = useState<Record<string, number>>({});
+  const [totalOverdueFromApi, setTotalOverdueFromApi] = useState<number>(0);
   const [q, setQ] = useState("");
   const [selected, setSelected] = useState<Customer | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -43,7 +44,13 @@ export default function Dashboard() {
       .then((r) => r.json())
       .then((data) => {
         if (data && typeof data === "object" && !data.error) {
-          setOverdueTotals(data);
+          if (typeof data.total === "number") {
+            setTotalOverdueFromApi(data.total);
+            setOverdueTotals(data.totals ?? {});
+          } else {
+            setOverdueTotals(data);
+            setTotalOverdueFromApi(Object.values(data).reduce((s: number, v: unknown) => s + (typeof v === "number" ? v : 0), 0));
+          }
         }
       })
       .catch(() => {});
@@ -64,9 +71,7 @@ export default function Dashboard() {
       .slice(0, 20);
   }, [customers, q, overdueTotals]);
 
-  const totalOverdueAll = useMemo(() => {
-    return Object.values(overdueTotals).reduce((sum, v) => sum + v, 0);
-  }, [overdueTotals]);
+  const totalOverdueAll = totalOverdueFromApi;
 
   const totalOpenBalance = useMemo(() => {
     return invoices.reduce((sum, inv) => sum + Number(inv.Balance || 0), 0);
@@ -172,7 +177,7 @@ export default function Dashboard() {
       </div>
 
       <p className="mb-2 text-sm font-medium text-slate-700">
-        Total overdue: ${totalOverdueAll.toFixed(2)}
+        Total overdue (your customers): ${totalOverdueAll.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </p>
       <div className="mb-6 border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
         <div className="grid grid-cols-[1fr_auto] gap-3 px-3 py-2.5 border-b border-slate-200 bg-slate-100">
