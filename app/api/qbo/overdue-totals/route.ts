@@ -41,28 +41,38 @@ export async function GET() {
   const allowed = filterCustomersForUser(allCustomers, user);
   const allowedIds = new Set(allowed.map((c) => c.Id));
 
-  // All open invoices (Balance > 0)
-  const invQuery = `select CustomerRef, DueDate, Balance from Invoice where Balance > '0' maxresults 1000`;
-  const invUrl = `${qboBaseUrl()}/v3/company/${creds.realmId}/query?query=${encodeURIComponent(invQuery)}`;
-  const invRes = await fetch(invUrl, {
-    headers: {
-      Authorization: `Bearer ${creds.accessToken}`,
-      Accept: "application/json",
-    },
-  });
-  if (!invRes.ok) {
-    const err = await invRes.json().catch(() => ({}));
-    return NextResponse.json(
-      { error: err?.Fault || "Failed to load invoices" },
-      { status: invRes.status }
-    );
-  }
-  const invData = await invRes.json();
-  const invoices = (invData?.QueryResponse?.Invoice ?? []) as Array<{
+  // Fetch all open invoices (Balance > 0), paginating to avoid 1000 limit
+  const invoices: Array<{
     CustomerRef?: { value?: string };
     DueDate?: string;
     Balance?: number;
-  }>;
+  }> = [];
+  let startPosition = 1;
+  const pageSize = 1000;
+  const maxPages = 20;
+
+  for (let page = 0; page < maxPages; page++) {
+    const invQuery = `select CustomerRef, DueDate, Balance from Invoice where Balance > '0' maxresults ${pageSize} startposition ${startPosition}`;
+    const invUrl = `${qboBaseUrl()}/v3/company/${creds.realmId}/query?query=${encodeURIComponent(invQuery)}`;
+    const invRes = await fetch(invUrl, {
+      headers: {
+        Authorization: `Bearer ${creds.accessToken}`,
+        Accept: "application/json",
+      },
+    });
+    if (!invRes.ok) {
+      const err = await invRes.json().catch(() => ({}));
+      return NextResponse.json(
+        { error: err?.Fault || "Failed to load invoices" },
+        { status: invRes.status }
+      );
+    }
+    const invData = await invRes.json();
+    const pageInvoices = (invData?.QueryResponse?.Invoice ?? []) as typeof invoices;
+    invoices.push(...pageInvoices);
+    if (pageInvoices.length < pageSize) break;
+    startPosition += pageSize;
+  }
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);

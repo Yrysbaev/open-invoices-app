@@ -65,11 +65,8 @@ export default function Dashboard() {
   }, [customers, q, overdueTotals]);
 
   const totalOverdueAll = useMemo(() => {
-    return filtered.reduce(
-      (sum, c) => sum + (overdueTotals[c.Id] ?? 0),
-      0
-    );
-  }, [filtered, overdueTotals]);
+    return Object.values(overdueTotals).reduce((sum, v) => sum + v, 0);
+  }, [overdueTotals]);
 
   const totalOpenBalance = useMemo(() => {
     return invoices.reduce((sum, inv) => sum + Number(inv.Balance || 0), 0);
