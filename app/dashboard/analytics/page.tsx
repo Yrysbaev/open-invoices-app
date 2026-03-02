@@ -70,8 +70,8 @@ export default function AnalyticsPage() {
     n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   return (
-    <div className="min-h-screen p-4 max-w-xl mx-auto bg-[#f4f8fd] pb-safe">
-      <div className="flex items-center justify-between mb-6">
+    <div className="min-h-screen p-6 max-w-7xl mx-auto bg-[#f4f8fd] pb-safe">
+      <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-2">
           <Link
             href="/dashboard"
@@ -80,7 +80,7 @@ export default function AnalyticsPage() {
             ← Dashboard
           </Link>
         </div>
-        <h1 className="text-xl font-semibold text-[#004f96]">Analytics</h1>
+        <h1 className="text-2xl font-semibold text-[#004f96]">Analytics</h1>
       </div>
 
       {loading && (
@@ -94,40 +94,29 @@ export default function AnalyticsPage() {
       )}
 
       {!loading && analytics && (
-        <div className="space-y-4">
+        <div className="space-y-8">
           <section>
-            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">
-              All records
-            </h2>
-            <div className="grid gap-3">
-              <div className="p-4 border border-slate-200 rounded-xl bg-white shadow-sm">
-                <div className="text-xs text-slate-500">Customers with open balance</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="p-5 border border-slate-200 rounded-xl bg-white shadow-sm">
+                <div className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Customers with open balance</div>
                 <div className="text-2xl font-semibold text-[#004f96]">
                   {analytics.customersWithOpenBalance}
                 </div>
               </div>
-              <div className="p-4 border border-slate-200 rounded-xl bg-white shadow-sm">
-                <div className="text-xs text-slate-500">Open invoices (count)</div>
+              <div className="p-5 border border-slate-200 rounded-xl bg-white shadow-sm">
+                <div className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Open invoices (count)</div>
                 <div className="text-2xl font-semibold text-[#004f96]">
                   {analytics.openInvoiceCount}
                 </div>
               </div>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">
-              Totals
-            </h2>
-            <div className="grid gap-3">
-              <div className="p-4 border border-slate-200 rounded-xl bg-white shadow-sm">
-                <div className="text-xs text-slate-500">Total open balance</div>
+              <div className="p-5 border border-slate-200 rounded-xl bg-white shadow-sm">
+                <div className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Total open balance</div>
                 <div className="text-2xl font-semibold text-[#004f96]">
                   ${fmt(analytics.totalOpen)}
                 </div>
               </div>
-              <div className="p-4 border border-red-200 rounded-xl bg-red-50 shadow-sm">
-                <div className="text-xs text-red-600">Total overdue</div>
+              <div className="p-5 border border-red-200 rounded-xl bg-red-50 shadow-sm">
+                <div className="text-xs font-medium text-red-600 uppercase tracking-wide mb-1">Total overdue</div>
                 <div className="text-2xl font-semibold text-red-700">
                   ${fmt(analytics.totalOverdue)}
                 </div>
@@ -135,60 +124,54 @@ export default function AnalyticsPage() {
                   {analytics.overdueCount} overdue invoice{analytics.overdueCount === 1 ? "" : "s"}
                 </div>
               </div>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">
-              Coming soon (due in next 30 days)
-            </h2>
-            <div className="p-4 border border-slate-200 rounded-xl bg-white shadow-sm">
-              <div className="text-xs text-slate-500">Amount due soon</div>
-              <div className="text-2xl font-semibold text-[#004f96]">
-                ${fmt(analytics.comingSoonAmount)}
-              </div>
-              <div className="text-xs text-slate-500 mt-1">
-                {analytics.comingSoonCount} invoice{analytics.comingSoonCount === 1 ? "" : "s"}
+              <div className="p-5 border border-slate-200 rounded-xl bg-white shadow-sm">
+                <div className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">Coming soon (30 days)</div>
+                <div className="text-2xl font-semibold text-[#004f96]">
+                  ${fmt(analytics.comingSoonAmount)}
+                </div>
+                <div className="text-xs text-slate-500 mt-1">
+                  {analytics.comingSoonCount} invoice{analytics.comingSoonCount === 1 ? "" : "s"}
+                </div>
               </div>
             </div>
           </section>
 
           <section>
-            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">
+            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">
               All overdue invoices (by customer)
             </h2>
             <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-sm min-w-[640px]">
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-100">
-                      <th className="text-left py-2.5 px-3 font-semibold text-slate-700">Customer</th>
-                      <th className="text-left py-2.5 px-3 font-semibold text-slate-700">Phone</th>
-                      <th className="text-left py-2.5 px-3 font-semibold text-slate-700">Responsible</th>
-                      <th className="text-right py-2.5 px-3 font-semibold text-slate-700">Total overdue</th>
-                      <th className="text-right py-2.5 px-3 font-semibold text-slate-700">Action</th>
+                      <th className="text-left py-3 px-4 font-semibold text-slate-700">Customer</th>
+                      <th className="text-left py-3 px-4 font-semibold text-slate-700">Phone</th>
+                      <th className="text-left py-3 px-4 font-semibold text-slate-700">Responsible</th>
+                      <th className="text-right py-3 px-4 font-semibold text-slate-700">Total overdue</th>
+                      <th className="text-right py-3 px-4 font-semibold text-slate-700">Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {(analytics.overdueList ?? []).length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="py-6 px-3 text-center text-slate-500">
+                        <td colSpan={5} className="py-8 px-4 text-center text-slate-500">
                           No overdue invoices.
                         </td>
                       </tr>
                     ) : (
                       (analytics.overdueList ?? []).map((row) => (
                         <tr key={row.customerId} className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50">
-                          <td className="py-2.5 px-3 text-slate-800">{row.displayName}</td>
-                          <td className="py-2.5 px-3 text-slate-600">{row.phone}</td>
-                          <td className="py-2.5 px-3 text-slate-700">{row.responsible ?? "—"}</td>
-                          <td className="py-2.5 px-3 text-right font-medium tabular-nums text-slate-800">
+                          <td className="py-3 px-4 text-slate-800">{row.displayName}</td>
+                          <td className="py-3 px-4 text-slate-600">{row.phone}</td>
+                          <td className="py-3 px-4 text-slate-700">{row.responsible ?? "—"}</td>
+                          <td className="py-3 px-4 text-right font-medium tabular-nums text-slate-800">
                             ${fmt(row.totalOverdue)}
                           </td>
-                          <td className="py-2.5 px-3 text-right">
+                          <td className="py-3 px-4 text-right">
                             <a
                               href={`/api/qbo/download-all?customerId=${encodeURIComponent(row.customerId)}&overdueOnly=true`}
-                              className="inline-block px-3 py-1.5 text-xs font-medium rounded-lg bg-[#004f96] text-white hover:opacity-95 active:scale-[0.98]"
+                              className="inline-block px-4 py-2 text-sm font-medium rounded-lg bg-[#004f96] text-white hover:opacity-95 active:scale-[0.98]"
                             >
                               Download ZIP
                             </a>
@@ -201,7 +184,7 @@ export default function AnalyticsPage() {
               </div>
             </div>
             {(analytics.overdueList ?? []).length > 0 && (
-              <div className="mt-4">
+              <div className="mt-6 flex justify-end">
                 <button
                   type="button"
                   onClick={() => {
@@ -224,7 +207,7 @@ export default function AnalyticsPage() {
                     a.click();
                     URL.revokeObjectURL(url);
                   }}
-                  className="w-full py-3 px-4 bg-slate-700 text-white rounded-xl font-medium hover:opacity-95 active:scale-[0.99]"
+                  className="py-3 px-6 bg-slate-700 text-white rounded-xl font-medium hover:opacity-95 active:scale-[0.99]"
                 >
                   Download table as Excel
                 </button>
