@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth-server";
+import { getResponsibleForDisplayName } from "@/lib/customer-access";
 import { getQboCredentials, qboBaseUrl } from "@/lib/qbo";
 
 export async function GET() {
@@ -100,6 +101,7 @@ export async function GET() {
     displayName: string;
     phone: string;
     totalOverdue: number;
+    responsible: string;
   }> = [];
 
   if (overdueCustomerIds.length > 0) {
@@ -126,12 +128,13 @@ export async function GET() {
           c?.PrimaryPhone && typeof c.PrimaryPhone === "object"
             ? (c.PrimaryPhone as { FreeFormNumber?: string }).FreeFormNumber ?? ""
             : "";
+        const displayName = c?.FullyQualifiedName ?? c?.DisplayName ?? "—";
         overdueList.push({
           customerId: cid,
-          displayName:
-            c?.FullyQualifiedName ?? c?.DisplayName ?? "—",
+          displayName,
           phone: phone || "—",
           totalOverdue: overdueByCustomer[cid] ?? 0,
+          responsible: getResponsibleForDisplayName(displayName),
         });
       }
       overdueList.sort((a, b) => b.totalOverdue - a.totalOverdue);

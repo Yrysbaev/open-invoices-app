@@ -18,6 +18,15 @@ function isGroupIn(group: string, allowedGroups: string[]) {
   return allowedGroups.includes(group);
 }
 
+/** Returns the sales person responsible for this customer (by display name / group). */
+export function getResponsibleForDisplayName(displayName: string): string {
+  const group = getTopLevelGroup(displayName);
+  if (isGroupIn(group, ISMAIL_CODES)) return "Ismail";
+  if (isGroupIn(group, ALI_CODES)) return "Ali";
+  if (!isGroupIn(group, RESERVED_CODES)) return "Yusuf";
+  return "—";
+}
+
 export function canAccessCustomerByDisplayName(params: {
   email: string;
   role: SalesRole;

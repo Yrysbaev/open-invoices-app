@@ -8,6 +8,7 @@ type OverdueRow = {
   displayName: string;
   phone: string;
   totalOverdue: number;
+  responsible: string;
 };
 
 type Analytics = {
@@ -163,6 +164,7 @@ export default function AnalyticsPage() {
                     <tr className="border-b border-slate-200 bg-slate-100">
                       <th className="text-left py-2.5 px-3 font-semibold text-slate-700">Customer</th>
                       <th className="text-left py-2.5 px-3 font-semibold text-slate-700">Phone</th>
+                      <th className="text-left py-2.5 px-3 font-semibold text-slate-700">Responsible</th>
                       <th className="text-right py-2.5 px-3 font-semibold text-slate-700">Total overdue</th>
                       <th className="text-right py-2.5 px-3 font-semibold text-slate-700">Action</th>
                     </tr>
@@ -170,7 +172,7 @@ export default function AnalyticsPage() {
                   <tbody>
                     {(analytics.overdueList ?? []).length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="py-6 px-3 text-center text-slate-500">
+                        <td colSpan={5} className="py-6 px-3 text-center text-slate-500">
                           No overdue invoices.
                         </td>
                       </tr>
@@ -179,6 +181,7 @@ export default function AnalyticsPage() {
                         <tr key={row.customerId} className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50">
                           <td className="py-2.5 px-3 text-slate-800">{row.displayName}</td>
                           <td className="py-2.5 px-3 text-slate-600">{row.phone}</td>
+                          <td className="py-2.5 px-3 text-slate-700">{row.responsible ?? "—"}</td>
                           <td className="py-2.5 px-3 text-right font-medium tabular-nums text-slate-800">
                             ${fmt(row.totalOverdue)}
                           </td>
@@ -203,12 +206,13 @@ export default function AnalyticsPage() {
                   type="button"
                   onClick={() => {
                     const rows = analytics.overdueList ?? [];
-                    const header = "Customer Name,Phone,Total Overdue\n";
+                    const header = "Customer Name,Phone,Responsible,Total Overdue\n";
                     const body = rows
                       .map((r) => {
                         const name = `"${String(r.displayName).replace(/"/g, '""')}"`;
                         const phone = `"${String(r.phone).replace(/"/g, '""')}"`;
-                        return `${name},${phone},${r.totalOverdue.toFixed(2)}`;
+                        const responsible = `"${String(r.responsible ?? "").replace(/"/g, '""')}"`;
+                        return `${name},${phone},${responsible},${r.totalOverdue.toFixed(2)}`;
                       })
                       .join("\n");
                     const csv = "\uFEFF" + header + body;
