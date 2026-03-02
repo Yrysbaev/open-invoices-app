@@ -8,6 +8,7 @@ import { getQboCredentials, qboBaseUrl } from "@/lib/qbo";
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const customerId = searchParams.get("customerId");
+  const overdueOnly = searchParams.get("overdueOnly") === "true";
 
   if (!customerId) {
     return NextResponse.json(
@@ -47,8 +48,11 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Forbidden customer access" }, { status: 403 });
   }
 
-  // Fetch open invoices
-  const query = `select Id, DocNumber from Invoice where CustomerRef='${customerId}' and Balance > '0' order by TxnDate desc maxresults 100`;
+  // Fetch open invoices (with DueDate when overdueOnly)
+  const selectFields = overdueOnly
+    ? "Id, DocNumber, DueDate"
+    : "Id, DocNumber";
+  const query = `select ${selectFields} from Invoice where CustomerRef='${customerId}' and Balance > '0' order by TxnDate desc maxresults 100`;
   const queryUrl = `${qboBaseUrl()}/v3/company/${creds.realmId}/query?query=${encodeURIComponent(query)}`;
 
   const queryRes = await fetch(queryUrl, {
@@ -59,11 +63,22 @@ export async function GET(req: Request) {
   });
 
   const queryData = await queryRes.json();
-  const invoices = queryData?.QueryResponse?.Invoice ?? [];
+  let invoices = queryData?.QueryResponse?.Invoice ?? [];
+
+  if (overdueOnly) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    invoices = invoices.filter((inv: { DueDate?: string }) => {
+      const dueStr = inv.DueDate;
+      if (!dueStr) return false;
+      const due = new Date(dueStr);
+      return !Number.isNaN(due.getTime()) && due < today;
+    });
+  }
 
   if (invoices.length === 0) {
     return NextResponse.json(
-      { error: "No open invoices to download" },
+      { error: overdueOnly ? "No overdue invoices to download" : "No open invoices to download" },
       { status: 404 }
     );
   }
@@ -94,7 +109,7 @@ export async function GET(req: Request) {
   return new Response(Readable.toWeb(passThrough) as unknown as ReadableStream, {
     headers: {
       "Content-Type": "application/zip",
-      "Content-Disposition": `attachment; filename="open-invoices.zip"`,
+      "Content-Disposition": `attachment; filename="${overdueOnly ? "overdue-invoices" : "open-invoices"}.zip"`,
     },
   });
 }

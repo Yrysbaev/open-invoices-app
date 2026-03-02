@@ -31,6 +31,7 @@ export async function GET() {
   let comingSoonAmount = 0;
   let comingSoonCount = 0;
   const customerIds = new Set<string>();
+  const overdueByCustomer: Record<string, number> = {};
 
   let startPosition = 1;
   const pageSize = 1000;
@@ -77,6 +78,10 @@ export async function GET() {
           if (due < today) {
             totalOverdue += balance;
             overdueCount += 1;
+            if (customerId) {
+              overdueByCustomer[customerId] =
+                (overdueByCustomer[customerId] ?? 0) + balance;
+            }
           } else if (due <= in30Days) {
             comingSoonAmount += balance;
             comingSoonCount += 1;
@@ -89,6 +94,50 @@ export async function GET() {
     startPosition += pageSize;
   }
 
+  const overdueCustomerIds = Object.keys(overdueByCustomer);
+  const overdueList: Array<{
+    customerId: string;
+    displayName: string;
+    phone: string;
+    totalOverdue: number;
+  }> = [];
+
+  if (overdueCustomerIds.length > 0) {
+    const custQuery = `select Id, DisplayName, FullyQualifiedName, PrimaryPhone from Customer maxresults 1000`;
+    const custUrl = `${qboBaseUrl()}/v3/company/${creds.realmId}/query?query=${encodeURIComponent(custQuery)}`;
+    const custRes = await fetch(custUrl, {
+      headers: {
+        Authorization: `Bearer ${creds.accessToken}`,
+        Accept: "application/json",
+      },
+    });
+    if (custRes.ok) {
+      const custData = await custRes.json();
+      const customers = (custData?.QueryResponse?.Customer ?? []) as Array<{
+        Id: string;
+        DisplayName?: string;
+        FullyQualifiedName?: string;
+        PrimaryPhone?: { FreeFormNumber?: string };
+      }>;
+      const byId = new Map(customers.map((c) => [c.Id, c]));
+      for (const cid of overdueCustomerIds) {
+        const c = byId.get(cid);
+        const phone =
+          c?.PrimaryPhone && typeof c.PrimaryPhone === "object"
+            ? (c.PrimaryPhone as { FreeFormNumber?: string }).FreeFormNumber ?? ""
+            : "";
+        overdueList.push({
+          customerId: cid,
+          displayName:
+            c?.FullyQualifiedName ?? c?.DisplayName ?? "—",
+          phone: phone || "—",
+          totalOverdue: overdueByCustomer[cid] ?? 0,
+        });
+      }
+      overdueList.sort((a, b) => b.totalOverdue - a.totalOverdue);
+    }
+  }
+
   return NextResponse.json({
     totalOverdue,
     totalOpen,
@@ -97,5 +146,6 @@ export async function GET() {
     comingSoonAmount,
     comingSoonCount,
     customersWithOpenBalance: customerIds.size,
+    overdueList,
   });
 }
