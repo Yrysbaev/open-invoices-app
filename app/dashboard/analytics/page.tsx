@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import {
+  SALES_MANAGERS,
+  type SalesManager,
+} from "@/lib/sales-manager-keys";
 
 type OverdueRow = {
   customerId: string;
@@ -22,11 +26,18 @@ type Analytics = {
   overdueList?: OverdueRow[];
 };
 
+type MailConfig = {
+  mailConfigured: boolean;
+  managers: Record<SalesManager, boolean>;
+};
+
 export default function AnalyticsPage() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [forbidden, setForbidden] = useState(false);
+  const [mailConfig, setMailConfig] = useState<MailConfig | null>(null);
+  const [sendingManager, setSendingManager] = useState<SalesManager | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -43,6 +54,11 @@ export default function AnalyticsPage() {
         if (cancelled) return;
         if (data?.error) setError(data.error);
         else if (data) setAnalytics(data);
+        const mailRes = await fetch("/api/qbo/send-overdue-report");
+        const mailData = await mailRes.json().catch(() => null);
+        if (mailData && !mailData.error && typeof mailData.mailConfigured === "boolean") {
+          setMailConfig(mailData);
+        }
       } catch {
         if (!cancelled) setError("Failed to load analytics");
       } finally {
@@ -133,6 +149,78 @@ export default function AnalyticsPage() {
                   {analytics.comingSoonCount} invoice{analytics.comingSoonCount === 1 ? "" : "s"}
                 </div>
               </div>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">
+              Email overdue report (Excel) to sales managers
+            </h2>
+            <p className="text-sm text-slate-600 mb-3 max-w-3xl">
+              Each button emails a CSV (opens in Excel). Ismail, Ali, and Yusuf get only their customers; Admin gets the full overdue list. Configure SMTP and addresses in{" "}
+              <code className="text-xs bg-slate-100 px-1 rounded">lib/sales-manager-emails.ts</code> or env vars{" "}
+              <code className="text-xs bg-slate-100 px-1 rounded">SALES_EMAIL_*</code>.
+            </p>
+            {mailConfig && !mailConfig.mailConfigured && (
+              <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-900">
+                SMTP is not configured. Set <code className="text-xs">SMTP_HOST</code>,{" "}
+                <code className="text-xs">SMTP_USER</code>, <code className="text-xs">SMTP_PASS</code> (and optional <code className="text-xs">SMTP_PORT</code>, <code className="text-xs">MAIL_FROM</code>).
+              </div>
+            )}
+            <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm divide-y divide-slate-100">
+              {SALES_MANAGERS.map((manager) => (
+                <div
+                  key={manager}
+                  className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
+                >
+                  <div>
+                    <div className="font-medium text-slate-800">{manager}</div>
+                    {manager === "Admin" && (
+                      <div className="text-xs text-slate-500 mt-0.5">
+                        Full company overdue list (all customers)
+                      </div>
+                    )}
+                    {mailConfig && !mailConfig.managers[manager] && (
+                      <div className="text-xs text-amber-700 mt-0.5">
+                        Set email in code or SALES_EMAIL_{manager.toUpperCase()}.
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    disabled={
+                      Boolean(sendingManager) ||
+                      !mailConfig?.mailConfigured ||
+                      !mailConfig?.managers[manager]
+                    }
+                    onClick={async () => {
+                      setSendingManager(manager);
+                      try {
+                        const r = await fetch("/api/qbo/send-overdue-report", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ manager }),
+                        });
+                        const data = await r.json().catch(() => ({}));
+                        if (!r.ok) {
+                          alert(data?.error || "Failed to send");
+                        } else {
+                          alert(
+                            `Sent ${data.rowCount} customer row(s) to ${data.sentTo}.`
+                          );
+                        }
+                      } catch {
+                        alert("Failed to send");
+                      } finally {
+                        setSendingManager(null);
+                      }
+                    }}
+                    className="px-5 py-2.5 text-sm font-medium rounded-lg bg-[#004f96] text-white hover:opacity-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {sendingManager === manager ? "Sending…" : "Sent"}
+                  </button>
+                </div>
+              ))}
             </div>
           </section>
 
