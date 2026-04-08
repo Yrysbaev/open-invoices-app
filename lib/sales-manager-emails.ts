@@ -13,9 +13,9 @@ export { SALES_MANAGERS, type SalesManager };
  */
 export const SALES_MANAGER_EMAILS: Record<SalesManager, string> = {
   Ismail: "sales01@makrofood.com",
-  Ali: "sales03@makrofood.com",
+  Ali: "sales02@makrofood.com",
   Yusuf: "Yusuf@makrofood.com",
-  Admin: "",
+  Admin: "mzamirbekovic02@gmail.com",
 };
 
 export function getSalesManagerEmail(manager: SalesManager): string | undefined {
