@@ -1,6 +1,6 @@
 type SalesRole = "admin" | "sales";
 
-const ISMAIL_CODES = ["DFW"];
+const ISMAIL_CODES = ["DFW", "OK"];
 const ALI_CODES = ["HOUAD", "AUSAD", "SANAD", "LOU"];
 const RESERVED_CODES = [...ISMAIL_CODES, ...ALI_CODES];
 
